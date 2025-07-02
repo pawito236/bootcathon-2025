@@ -61,7 +61,7 @@ def csv_query_agent(filenames: list[str], query: str, structure_output: dict) ->
         response = agent_executor.invoke(prompt)
         response['output'] = json.loads(response['output'].replace("```json", "").replace("```", "").strip())
         print(json.dumps(response, indent = 2, ensure_ascii=False))
-        return response['output']
+        return json.dumps(response['output'], indent = 2, ensure_ascii=False)
     
     except Exception as e:
         print("Error: ", e)
