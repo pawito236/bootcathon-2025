@@ -1,0 +1,5 @@
+﻿Operation,Plant/Mode of Transport,Cost,Currency
+Inventory Storage per MT per day,SINGAPORE WAREHOUSE,15,SGD
+Inventory Storage per MT per day,CHINA WAREHOUSE,1.7,CNY
+Transfer cost per container (24.75MT),Truck,150,SGD
+Transfer cost per container (24.75MT),Marine,75,USD
