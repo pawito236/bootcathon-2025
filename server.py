@@ -8,6 +8,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.utilities.logging import get_logger
 from dotenv import load_dotenv
 load_dotenv()
+import traceback
 logger = get_logger(__name__)
 
 logger.info('Starting MCP MCP Server')
@@ -30,36 +31,42 @@ def csv_query_agent(filenames: list[str], query: str, structure_output: dict) ->
     """This tool is for calculate a <operation> b
 
     Args:
-        query: user question
-        structure_output: format to response 
+        filenames: list of file.csv
+        query: CSV query
+        structure_output: format to response
     """
-    # Load the CSV agent
-    agent_executor = create_csv_agent(
-        llm,
-        # ["/content/warehouse_agent.csv"],
-        ["/src/Inbound.csv", "/src/Outbound.csv", "/src/Inventory.csv"],
-        agent_type="zero-shot-react-description",
-        verbose=True,
-        allow_dangerous_code=True
-    )
+    try:
+        # Load the CSV agent
+        agent_executor = create_csv_agent(
+            llm,
+            # ["/content/warehouse_agent.csv"],
+            ["/src/Inbound.csv", "/src/Outbound.csv", "/src/Inventory.csv"],
+            agent_type="zero-shot-react-description",
+            verbose=True,
+            allow_dangerous_code=True
+        )
 
-    prompt = f"""
-    Query: {query}
+        prompt = f"""
+        Query: {query}
 
-    Goal:
-    1. Generate csv query to get enough information for the following query
-    2. If facing some error, try to fix step by step before response.
-    3. Try to print the all final result variable for traceability in single print() function using string format to concatenate all result at once.
-    4. Response with structure_output
+        Goal:
+        1. Generate csv query to get enough information for the following query
+        2. If facing some error, try to fix step by step before response.
+        3. Try to print the all final result variable for traceability in single print() function using string format to concatenate all result at once.
+        4. Response with structure_output
 
-    Remember to answer with this follow structure json format:
-    {structure_output}
-    """
-    response = agent_executor.invoke(prompt)
-    response['output'] = json.loads(response['output'].replace("```json", "").replace("```", "").strip())
-    print(json.dumps(response, indent = 2, ensure_ascii=False))
-
-    return response['output']
+        Remember to answer with this follow structure json format:
+        {structure_output}
+        """
+        response = agent_executor.invoke(prompt)
+        response['output'] = json.loads(response['output'].replace("```json", "").replace("```", "").strip())
+        print(json.dumps(response, indent = 2, ensure_ascii=False))
+        return response['output']
+    
+    except Exception as e:
+        print("Error: ", e)
+        traceback.print_exc()
+    
 
 logger.info(
         f'MCP MCP Server at {host}:{port} and transport {transport}'
