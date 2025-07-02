@@ -1,0 +1,6 @@
+pandas
+requests
+langchain
+langchain-google-genai
+fastmcp
+langchain-experimental
