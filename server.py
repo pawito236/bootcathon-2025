@@ -37,7 +37,7 @@ def csv_query_agent(filenames: list[str], query: str, structure_output: dict) ->
     agent_executor = create_csv_agent(
         llm,
         # ["/content/warehouse_agent.csv"],
-        ["/content/Inbound.csv", "/content/Outbound.csv", "/content/Inventory.csv"],
+        ["/src/Inbound.csv", "/src/Outbound.csv", "/src/Inventory.csv"],
         agent_type="zero-shot-react-description",
         verbose=True,
         allow_dangerous_code=True
