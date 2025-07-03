@@ -27,8 +27,13 @@ import json
 
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.4, max_tokens=4096)
 
+df_template = """```python
+{df_name}.head().to_markdown()
+>>> {df_head}
+``` """
+
 # System prompt for better reasoning
-SYSTEM_PROMPT = """
+SYSTEM_PROMPT =    """
 You are an expert data analyst working with pandas DataFrames. Your task is to:
 
 1. Analyze the query carefully and understand what information is needed
@@ -39,28 +44,38 @@ You are an expert data analyst working with pandas DataFrames. Your task is to:
 6. Provide detailed explanations for any data limitations or filtering decisions
 7. When dealing with large datasets, summarize key insights while maintaining accuracy
 
+You have access to a number of pandas dataframes. 
+
+
+Given a user question about the dataframes, write the Python code to answer it. 
+Don't assume you have access to any libraries other than built-in Python ones and pandas. 
+Make sure to refer only to the variables mentioned above and always copy finale answer in to 'result' variable and print(result) at the end.
+Answer only code pandas as short as possible and no need to add comment.
+Use only existed dataframe and do not mock up any Sample data.
+
+
 Example Output
-{
+{{
   "type": "bar",
-  "data": {
+  "data": {{
     "labels": ["26-May", "2-Jun", "9-Jun"],
     "datasets": [
-      {
+      {{
         "label": "Total Inbound",
         "data": [8000, 12000, 9500],
         "backgroundColor": "#5bc0de",
         "stack": "stack1"
-      },
-      {
+      }},
+      {{
         "label": "Max Capacity (MT)",
         "data": [50000, 50000, 50000],
         "type": "line",
         "borderColor": "#d9534f",
         "fill": false
-      }
+      }}
     ]
-  }
-}
+  }}
+}}
 
 Remember: If someone asks for monthly data, provide ALL months in the dataset, not just a subset. Always justify your data selection and aggregation logic.
 """
@@ -92,6 +107,7 @@ def load_and_analyze_dataframes(filenames: List[str]) -> tuple[List[pd.DataFrame
     """Load dataframes and analyze their sizes"""
     dataframes = []
     size_analyses = []
+    df_context_list = []
     
     for filename in filenames:
         try:
@@ -99,6 +115,7 @@ def load_and_analyze_dataframes(filenames: List[str]) -> tuple[List[pd.DataFrame
             df = pd.read_csv(filename)
             print(df.head())
             dataframes.append(df)
+            df_context_list.append(df_template.format(df_head=df.head().to_markdown(), df_name=filename.split(".")[0]))
             
             # Analyze size
             size_info = check_dataframe_size(df, filename)
@@ -115,8 +132,8 @@ def load_and_analyze_dataframes(filenames: List[str]) -> tuple[List[pd.DataFrame
         except Exception as e:
             logger.error(f"Error loading {filename}: {e}")
             raise
-    
-    return dataframes, size_analyses
+    df_context = "\n\n".join(df_context_list)
+    return dataframes, size_analyses, df_context
 
 def execute_with_retry(agent_executor, prompt: str, max_retries: int = 3, delay: float = 1.0) -> Dict[str, Any]:
     """Execute agent with retry logic"""
@@ -161,7 +178,7 @@ def pandas_query_agent(filenames: list[str], query: str, structure_output: dict)
         
         # Load and analyze dataframes
         logger.info(f"Loading dataframes from: {filenames}")
-        dataframes, size_analyses = load_and_analyze_dataframes(filenames)
+        dataframes, size_analyses, df_context = load_and_analyze_dataframes(filenames)
         
         # Log size analysis
         total_rows = sum(analysis['rows'] for analysis in size_analyses)
