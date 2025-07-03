@@ -34,28 +34,29 @@ df_template = """```python
 
 # System prompt for better reasoning
 SYSTEM_PROMPT =    """
-You are an expert data analyst working with pandas DataFrames. Your task is to:
+You are an expert data analyst working with pandas DataFrames. 
+You have access to a number of pandas dataframes. 
+Here is a sample of rows from each dataframe and the python code that was used to generate the sample:
+{df_context}
+
+Your task is to:
 
 1. Analyze the query carefully and understand what information is needed
-2. Generate appropriate pandas operations to extract the required data
+2. Generate appropriate pandas operations to extract the required data (Don't assume you have access to any libraries other than built-in Python ones and pandas. )
 3. If the query involves time periods (like "monthly", "weekly"), ensure you properly group and aggregate the data for the ENTIRE requested period
 4. Always explain your reasoning step by step, especially when dealing with time-based queries
 5. If your initial result seems incomplete or doesn't match the expected time period, investigate why and adjust your approach
 6. Provide detailed explanations for any data limitations or filtering decisions
 7. When dealing with large datasets, summarize key insights while maintaining accuracy
+8. Use only existed dataframe and do not mock up any Sample data.
+"""
 
-You have access to a number of pandas dataframes. 
+FEW_SHOT = """
+Here is possible scenario to generate different type of chart.
 
-
-Given a user question about the dataframes, write the Python code to answer it. 
-Don't assume you have access to any libraries other than built-in Python ones and pandas. 
-Make sure to refer only to the variables mentioned above and always copy finale answer in to 'result' variable and print(result) at the end.
-Answer only code pandas as short as possible and no need to add comment.
-Use only existed dataframe and do not mock up any Sample data.
-
-
-Example Output
+Example Output for generate bar chart:
 {{
+  "explanation": "your explaination of final answer go here"
   "type": "bar",
   "data": {{
     "labels": ["26-May", "2-Jun", "9-Jun"],
@@ -76,8 +77,6 @@ Example Output
     ]
   }}
 }}
-
-Remember: If someone asks for monthly data, provide ALL months in the dataset, not just a subset. Always justify your data selection and aggregation logic.
 """
 
 def check_dataframe_size(df: pd.DataFrame, name: str) -> Dict[str, Any]:
@@ -160,16 +159,15 @@ def execute_with_retry(agent_executor, prompt: str, max_retries: int = 3, delay:
     raise last_exception
 
 @mcp.tool()
-def pandas_query_agent(filenames: list[str], query: str, structure_output: dict) -> str:
+def pandas_query_agent(filenames: list[str], query: str) -> str:
     """Enhanced pandas agent for querying multiple CSV files with better error handling and reasoning
     
     Args:
         filenames: List of CSV file paths
         query: Natural language query about the data
-        structure_output: Expected JSON structure for the response
         
     Returns:
-        JSON string with structured results
+        JSON string with structured results of explaination and chart to be plot
     """
     try:
         # Use default files if none provided
@@ -191,6 +189,8 @@ def pandas_query_agent(filenames: list[str], query: str, structure_output: dict)
         if has_large_datasets:
             logger.warning("Large datasets detected - performance may be impacted")
         
+        final_prompt = SYSTEM_PROMPT.format(df_context=df_context)+"\n"+FEW_SHOT
+        print(final_prompt)
         # Create pandas agent with enhanced configuration
         agent_executor = create_pandas_dataframe_agent(
             llm,
@@ -198,35 +198,12 @@ def pandas_query_agent(filenames: list[str], query: str, structure_output: dict)
             agent_type="tool-calling",  # Changed from zero-shot-react-description
             verbose=True,
             # handle_parsing_errors=True,  # Added for better error handling
-            suffix=SYSTEM_PROMPT,  # Added system prompt
+            suffix=final_prompt,  # Added system prompt
             return_intermediate_steps=True,  # For better debugging
             max_iterations=10,  # Prevent infinite loops
             max_execution_time=300,  # 5 minute timeout
             allow_dangerous_code=True
         )
-        
-        # Enhanced prompt with reasoning requirements
-        enhanced_prompt = f"""
-        Dataset Information:
-        {json.dumps(size_analyses, indent=2)}
-        
-        Query: {query}
-        
-        Instructions:
-        1. Analyze the query carefully and understand the full scope of what's being asked
-        2. If the query involves time periods, ensure you capture ALL relevant time periods in the dataset
-        3. Generate appropriate pandas operations to extract the required information
-        4. If you encounter any issues or unexpected results, explain your reasoning
-        5. Provide step-by-step analysis of your approach
-        6. If the result seems incomplete (e.g., asking for monthly data but only returning 2 days), 
-           explain WHY this happened and what the actual data contains
-        7. Always print your final results for verification
-        
-        Expected output format:
-        {structure_output}
-        
-        Remember: Be thorough in your analysis and always explain your reasoning, especially for time-based queries.
-        """
         
         # Execute with retry logic
         response = execute_with_retry(agent_executor,query, max_retries=3)
@@ -308,11 +285,11 @@ def pandas_query_agent(filenames: list[str], query: str, structure_output: dict)
         return json.dumps(error_response, indent=2, ensure_ascii=False)
 
 # Keep the old function for backward compatibility
-@mcp.tool()
-def csv_query_agent(filenames: list[str], query: str, structure_output: dict) -> str:
-    """Legacy CSV agent - deprecated, use pandas_query_agent instead"""
-    logger.warning("csv_query_agent is deprecated. Use pandas_query_agent instead.")
-    return pandas_query_agent(filenames, query, structure_output)
+# @mcp.tool()
+# def csv_query_agent(filenames: list[str], query: str) -> str:
+#     """Legacy CSV agent - deprecated, use pandas_query_agent instead"""
+#     logger.warning("csv_query_agent is deprecated. Use pandas_query_agent instead.")
+#     return pandas_query_agent(filenames, query)
 
 logger.info(f'MCP MCP Server at {host}:{port} and transport {transport}')
 
