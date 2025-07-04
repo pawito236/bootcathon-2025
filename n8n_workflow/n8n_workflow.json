@@ -1,0 +1,894 @@
+{
+  "name": "Mattew workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -440,
+        -120
+      ],
+      "id": "efae6a7b-8ba6-4681-96bb-3a873d16c0c4",
+      "name": "When chat message received",
+      "webhookId": "b7a3f743-3c66-4f2b-afb7-8f8d31c6f017"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        180
+      ],
+      "id": "8df9fe03-efec-459d-8606-c2794f70e638",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wsnQJb6W6yhXZ468",
+          "name": "Google Gemini(PaLM) Api (Mattew)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "generate_chart_tool",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "634750d2-5a57-4f47-b98d-437f21d14fa3"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a7da77cd-eae1-49d8-8de3-0d4962c11a30",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "Conclusion",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ff73835e-2d9f-4955-9d4d-42a795c55e5f",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "internet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -220,
+        460
+      ],
+      "id": "06d0f376-e5d2-40fa-9b8d-e632547dcecb",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_prompt"
+            },
+            {
+              "name": "route"
+            },
+            {
+              "name": "db_records"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -440,
+        460
+      ],
+      "id": "edabab16-e4eb-423f-9050-e0a59cd90a69",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a helpful search engine AI that helps rephrase the Follow-Up question into a standalone question that captures a context and keyword from latest chat history without any additional text or labels.\n\nTo rephrase Follow-Up question, you follow these instructions/steps:\n1. Core Requirements:\n- If the Follow-Up question is related to the chat history, rephrase the Follow-Up question into a standalone question.  Otherwise, return the Follow-Up question as is for the standalone question.\n- Lookups with chat history to generate a new Standalone question that captures a context and keyword latest chat history along with Follow-Up question and make it like a search term.\n- Preserve the exact format and structure of the original query.\n- If the user provides a month name without a specific day, I need to reprompt them with the full range for that month (e.g., \"from 1/January/2024 to 31/January/2024\").\n\n2. Context Integration:\n- In discussions about comparisons, name all compared items explicitly.\n- Add only essential context to maintain query clarity.\n- Preserve all key terms and language from the original query.\n\nYour response should be in the following output schema:\n- Return only a single string of Standalone question not the answer of that question.\n- Standalone question must be in the original language of Follow-Up question.\n- DO NOT include any additional text or labels because it is already well-known as a standalone question.\n\n\ninstructions:\nThe above system instructions define your capabilities and your scope.\n\nChat History:\n{chat_history}\n\nFollow-Up question: {original_question}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -120,
+        -120
+      ],
+      "id": "6fe8ba41-2716-4f4e-9522-f21b101dfa59",
+      "name": "Rephrase"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool for any insights, analysis, numbers, summaries, factual answers, or conclusions. This is the default for all data-related questions unless a chart is explicitly requested.",
+        "workflowId": {
+          "__rl": true,
+          "value": "K6NBMq1GWwyEzgW5",
+          "mode": "list",
+          "cachedResultName": "Mattew workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_prompt": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('user_prompt', ``, 'string') }}",
+            "route": "Conclusion",
+            "db_records": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('db_records', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "user_prompt",
+              "displayName": "user_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "route",
+              "displayName": "route",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "db_records",
+              "displayName": "db_records",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        860,
+        100
+      ],
+      "id": "deeefcab-41c5-47ea-829e-4489f6e47665",
+      "name": "Conclusion"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant that routes user requests to the most appropriate tool from the list below.\nALWAYS use the conclusion tool as the default Use generate_chart_tool only when the user clearly and explicitly requests a visual, such as:\n\"Show me a chart\"\n\"Visualize\"\n\"Plot a graph\"\n\"Draw a chart\"\n\"Can I see a bar/pie/line chart\"\nDo NOT use generate_chart_tool for questions that ask for values, trends, outbounds, comparisons, or data-related answers — unless the user explicitly asks for a chart.\nTOOLS\n\nconclusion: Use this tool for any insights, analysis, numbers, summaries, factual answers, or conclusions. This is the default for all data-related questions unless a chart is explicitly requested.\n\ngenerate_chart_tool: Use this only if the user clearly asks for a visual/chart/graph/plot.\nIf a chart is used, always include a link to the chart and provide helpful context using the conclusion tool if needed.\n\nAlway use conclusion tools before response"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -120
+      ],
+      "id": "ad115840-8b45-4a10-89bb-52760f84db43",
+      "name": "Router Agent"
+    },
+    {
+      "parameters": {
+        "description": "Use this tool only when the user explicitly requests a chart or visual representation of data.",
+        "workflowId": {
+          "__rl": true,
+          "value": "K6NBMq1GWwyEzgW5",
+          "mode": "list",
+          "cachedResultName": "Mattew workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_prompt": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('user_prompt', ``, 'string') }}",
+            "route": "generate_chart_tool",
+            "db_records": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('db_records', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "user_prompt",
+              "displayName": "user_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "route",
+              "displayName": "route",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "db_records",
+              "displayName": "db_records",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        100
+      ],
+      "id": "dbfb3e11-451b-4107-854e-b6a447645026",
+      "name": "Visualizer"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        180
+      ],
+      "id": "4c961f55-05bc-43d8-8343-b27740cac9b8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "url": "=https://quickchart.io/chart?c={{ encodeURIComponent(JSON.stringify($json.output.structure)) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        580,
+        460
+      ],
+      "id": "c4eb9de2-1de9-4201-9ddb-9baeaa1a54a8",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {
+          "maxOutputTokens": 4096
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        200,
+        720
+      ],
+      "id": "2c8b5162-621b-409f-bbae-075afc5fe038",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FHrqsDrFchwCFUsM",
+          "name": "Google Gemini(PaLM) Api (Peam)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "https://255f-161-246-147-6.ngrok-free.app/sse"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        580,
+        700
+      ],
+      "id": "3cd09fbd-a05b-4863-b46a-69493d5ba6a7",
+      "name": "MCP CSV1"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"output\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"explaination\": { \"type\": \"string\" },\n        \"structure\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"type\": { \"type\": \"string\" },\n            \"data\": {\n              \"type\": \"object\",\n              \"properties\": {\n                \"labels\": {\n                  \"type\": \"array\",\n                  \"items\": { \"type\": \"string\" }\n                },\n                \"datasets\": {\n                  \"type\": \"array\",\n                  \"items\": {\n                    \"type\": \"object\",\n                    \"additionalProperties\": true\n                  }\n                }\n              },\n              \"required\": [\"labels\", \"datasets\"]\n            }\n          },\n          \"required\": [\"type\", \"data\"]\n        }\n      },\n      \"required\": [\"explaination\", \"structure\"]\n    }\n  },\n  \"required\": [\"output\"]\n}\n",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        680,
+        660
+      ],
+      "id": "7ee5d98f-8931-4503-b0fe-dcc7c239fa5d",
+      "name": "Structured Output Parser1",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.user_prompt }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        420,
+        760
+      ],
+      "id": "372950b0-e133-420e-bf81-8582be32da53",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.output }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        420,
+        100
+      ],
+      "id": "304e0fc9-55fd-43b2-9c5b-d1f000bdf2b1",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "content": "**Concluson Agent**",
+        "height": 480,
+        "width": 840
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        860
+      ],
+      "id": "2588ee9c-de0c-4a1f-aa1a-801b98f0bc4c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        20,
+        1120
+      ],
+      "id": "b2647d2b-ed3c-4fe3-a266-2603eb00bad9",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wsnQJb6W6yhXZ468",
+          "name": "Google Gemini(PaLM) Api (Mattew)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "https://7487-49-228-196-174.ngrok-free.app/sse"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        340,
+        1160
+      ],
+      "id": "b0e0d91e-e0c3-40c6-a48c-4c7090346b52",
+      "name": "MCP Client1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.user_prompt }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        200,
+        1160
+      ],
+      "id": "ecf74f40-42fe-4dea-856b-ff871df84281",
+      "name": "Simple Memory4"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        1120
+      ],
+      "id": "11cbf6f3-b4a2-4759-8a13-161363952835",
+      "name": "SerpAPI",
+      "credentials": {
+        "serpApi": {
+          "id": "dnbV8rg7d63bVQ4c",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        940,
+        1100
+      ],
+      "id": "848a17a0-5093-4918-b9ca-6a8b6c134ab7",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "wsnQJb6W6yhXZ468",
+          "name": "Google Gemini(PaLM) Api (Mattew)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**Internet Search**",
+        "height": 480,
+        "width": 660,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        820,
+        860
+      ],
+      "id": "73dcb55f-8d15-461f-9e91-9c40a4c14600",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "description": "Call this tool if you want to find more information through searching the internet.",
+        "workflowId": {
+          "__rl": true,
+          "value": "K6NBMq1GWwyEzgW5",
+          "mode": "list",
+          "cachedResultName": "Mattew workflow"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_prompt": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('user_prompt', ``, 'string') }}",
+            "route": "=internet",
+            "db_records": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('db_records', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "user_prompt",
+              "displayName": "user_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "route",
+              "displayName": "route",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "db_records",
+              "displayName": "db_records",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        500,
+        1140
+      ],
+      "id": "99b6d04d-3aec-4b79-b75d-9df13357a3e0",
+      "name": "Call Serp"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_prompt }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "```\nYou are an intelligent AI agent embedded in the n8n automation platform. Your job is to automatically convert user requests into actionable data workflows using structured CSV files and return results as QuickChart-compatible JSON charts.\n\nTOOLS:\n\nmcp(file: str, query: str) → json\n- Use this to query CSV files and return filtered tabular data.\n- You must automatically decide:\n  - Which file to use\n  - What filters to apply\n  - What columns to extract\n- Never ask the user to provide file name, filters, or column names.\n- Always use quickchart format given below\n\nDATA SOURCES:\n\n[\n  {\n    \"file_name\": \"Inventory\",\n    \"columns\": {\n      \"BALANCE_AS_OF_DATE\": \"Date of monthly inventory snapshot\",\n      \"PLANT_NAME\": \"Name of plant or warehouse\",\n      \"MATERIAL_NAME\": \"Product name\",\n      \"BATCH_NUMBER\": \"Batch identifier\",\n      \"UNRESRICTED_STOCK\": \"Available quantity\",\n      \"STOCK_UNIT\": \"Unit of measurement\",\n      \"STOCK_SELL_VALUE\": \"Sell value\",\n      \"CURRENCY\": \"Currency used\"\n    }\n  },\n  {\n    \"file_name\": \"Inbound\",\n    \"columns\": {\n      \"INBOUND_DATE\": \"Import date\",\n      \"PLANT_NAME\": \"Receiving plant\",\n      \"MATERIAL_NAME\": \"Imported product\",\n      \"NET_QUANTITY_MT\": \"Quantity in Metric Tons\"\n    }\n  },\n  {\n    \"file_name\": \"Outbound\",\n    \"columns\": {\n      \"OUTBOUND_DATE\": \"Shipment date\",\n      \"PLANT_NAME\": \"Shipping plant\",\n      \"MODE_OF_TRANSPORT\": \"Transport type\",\n      \"MATERIAL_NAME\": \"Shipped product\",\n      \"CUSTOMER_NUMBER\": \"Customer ID\",\n      \"NET_QUANTITY_MT\": \"Quantity in Metric Tons\"\n    }\n  },\n  {\n    \"file_name\": \"Material\",\n    \"columns\": {\n      \"MATERIAL_NAME\": \"Product name\",\n      \"POLYMER_TYPE\": \"Polymer type\",\n      \"SHELF_LIFE_IN_MONTH\": \"Shelf life in months\",\n      \"DOWNGRADE_VALUE_LOST_PERCENT\": \"Value lost if expired (%)\"\n    }\n  },\n  {\n    \"file_name\": \"OperationCost\",\n    \"columns\": {\n      \"Inventory Storage per MT per day\": \"Storage cost per ton/day\",\n      \"Transfer cost per container (24.75MT)\": \"Transport cost per container\"\n    }\n  },\n  {\n    \"file_name\": \"Forecast\",\n    \"columns\": {\n      \"Predicted Outbound (KT)\": \"Forecasted outbound in KT\",\n      \"Predicted Inventory (KT)\": \"Forecasted inventory in KT\"\n    }\n  }\n]\n\nBEHAVIOR:\n\n1. Interpret the user's request.\n2. Automatically choose the correct CSV file.\n3. Call mcp(file, query) with appropriate values.\n4. Extract needed fields from the mcp() output.\n5. Format the output without change the mcp() chart structure output \n\noutput format example\n{\n  \"output\": {\n      \"explaination\":\"your explaination\",\n      \"structure\":{\n        \"type\": \"bar\",\n        \"data\": {\n            \"labels\": [\"ML #1\", \"ML #2\", \"ML #3\"],\n            \"datasets\": [\n                {\n                \"label\": \"List Price\",\n                \"data\": [1000000, 1200000, 1100000],\n                \"backgroundColor\": \"rgba(75, 192, 192, 0.2)\"\n                }\n            ]\n        }\n    }\n  }\n}\n\n\n```"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        140,
+        460
+      ],
+      "id": "aad26d58-6743-4f0a-bad6-7fd38b9e534b",
+      "name": "Visualizer1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_prompt }}",
+        "options": {
+          "systemMessage": "You are a data analysis and summary agent that can use an external data query tool called **MCP Tool** and **Internet Search Tool** to retrieve data when necessary.  \nYou will receive a user question and must determine whether you need to call MCP Tool or Internet Search Tool to retrieve data from one or more data files based on the question's requirements.\n\nThe available data files and their purposes are:\n\n1. **Inventory**\n   - Snapshot of monthly inventory.\n   - Columns: \n     - BALANCE_AS_OF_DATE: Date of snapshot\n     - PLANT_NAME: Warehouse name\n     - MATERIAL_NAME: Product\n     - UNRESTRICTED_STOCK: Quantity available\n     - STOCK_SELL_VALUE: Total sell value of batch\n     - BATCH_NUMBER, STOCK_UNIT, CURRENCY\n\n2. **Inbound**\n   - Records of materials received at the warehouse.\n   - Columns: \n     - INBOUND_DATE, PLANT_NAME, MATERIAL_NAME, NET_QUANTITY_MT\n\n3. **Outbound**\n   - Records of materials shipped to customers.\n   - Columns: \n     - OUTBOUND_DATE, PLANT_NAME, MATERIAL_NAME, MODE_OF_TRANSPORT, CUSTOMER_NUMBER, NET_QUANTITY_MT\n\n4. **MaterialMaster**\n   - Information about material type, shelf life, and value loss.\n   - Columns: \n     - MATERIAL_NAME, POLYMER_TYPE, SHELF_LIFE_IN_MONTH, DOWNGRADE_VALUE_LOST_PERCENT\n\n5. **OperationCost**\n   - Storage and transport cost data.\n   - Columns: \n     - Inventory Storage per MT per day\n     - Transfer cost per container (24.75MT)\n\n6. **Forecast**\n   - Monthly forecast of outbound and inventory.\n   - Columns:\n     - Predicted Outbound (KT)\n     - Predicted Inventory (KT)\n\n### Instructions:\n1. **Identify if MCP Tool needs to be used**: Based on the user’s question, determine which file(s) are relevant for retrieving the required data.\n2. **Querying MCP Tool**: Once you determine the relevant file(s), formulate a query to retrieve the necessary data.\n3. **Pandas Execution Code**: The MCP Tool might return response as a pandas python code, you can send this code back to MCP Tool again to get the data you request.\n4. **Processing the Result**: Once the MCP Tool returns the data, analyze the data in that response and answer as the user has asked you to do. Only specific some material if the user asked you to do that.\n5. **Previous Response**: There might be also a previous response from user question. If you are not sure or the previous data is in different context or the data in that response is not accurate. Call the MCP Tool once again.\n6. **Identify if Internet Search Tool**: If the question that user ask is out of boundary of the file you have or you need to use a real-time data to provide response to user. You can use the internet tool to get more information.\n7. **Response Structure**:\n    - **FINAL_ANSWER**: [Provide a clear and concise conclusion to the user’s question based on the data retrieved.]\n\n    - **Reasoning**: [Explain why that answer was chosen, referencing the exact name of the data files or rows that are used, even the amount of row that have been processed and any relevant insights from the retrieved data.]\n8. **What's not to output**: Don't output the whole data to user. Try to summarize it without losing the context.\n\nIf you need additional data from multiple files, ensure that all relevant sources are queried and merged appropriately before presenting the final response.\n\nUser Question:\n{{ $json.original_question }}\n\n{% if $json.csv_result %}\nMCP Tool Result:\n{{ $json.csv_result }}\n{% endif %}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        140,
+        900
+      ],
+      "id": "9a305978-4c25-4f1f-af51-83041486130e",
+      "name": "Conclusion1",
+      "notesInFlow": false,
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_prompt }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant in a international polymer company and will help user provide the information that they need. Always translate all inputs into English before performing a search using the NEWS API. After retrieving the results, translate the answer back to Thai, ensuring it reads fluently and naturally. Don't forget to provide the source of the news in your response."
+        }
+      },
+      "id": "d6530537-8cbb-4e6a-9ec9-a1e65e98dac4",
+      "name": "internet Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1000,
+        900
+      ],
+      "typeVersion": 1.8
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Rephrase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rephrase",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Router Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Visualizer1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Conclusion1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "internet Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rephrase": {
+      "main": [
+        [
+          {
+            "node": "Router Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conclusion": {
+      "ai_tool": [
+        [
+          {
+            "node": "Router Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Visualizer": {
+      "ai_tool": [
+        [
+          {
+            "node": "Router Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Rephrase",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Visualizer1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP CSV1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Visualizer1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Visualizer1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Visualizer1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "Router Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Conclusion1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Conclusion1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory4": {
+      "ai_memory": [
+        [
+          {
+            "node": "Conclusion1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "internet Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "internet Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Serp": {
+      "ai_tool": [
+        [
+          {
+            "node": "Conclusion1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Visualizer1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1027858c-4d15-49cc-9fe3-bd3c8037f39d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f4954904b5e7a6909235fc28b28449132257894bff145c281a556445e1f3fa05"
+  },
+  "id": "K6NBMq1GWwyEzgW5",
+  "tags": []
+}

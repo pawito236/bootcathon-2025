@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --exxon-red: #E31837;
+  --exxon-dark-blue: #003366;
+  --exxon-light-blue: #0066CC;
+  --exxon-gray: #F5F5F5;
+  --exxon-dark-gray: #333333;
+  --exxon-text: #2C2C2C;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-feature-settings: 'cv11', 'ss01';
+  font-variation-settings: 'opsz' 32;
+}
+
+.exxon-gradient {
+  background: linear-gradient(135deg, #003366 0%, #0066CC 100%);
+}
+
+.exxon-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.exxon-shadow {
+  box-shadow: 0 4px 20px rgba(0, 51, 102, 0.1);
+}
+
+.exxon-text-gradient {
+  background: linear-gradient(135deg, #E31837 0%, #003366 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
