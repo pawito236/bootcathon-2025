@@ -56,7 +56,29 @@ Here is possible scenario to generate different type of chart.
 
 Example Output for generate bar chart:
 {{
-  "explanation": "your explaination of final answer go here"
+  "explanation": "your explaination of final answer and how you retrive the data"
+  "type": "bar",
+  "data": {{
+    "labels": ["26-May", "2-Jun", "9-Jun"],
+    "datasets": [
+      {{
+        "label": "Total Inbound",
+        "data": [8000, 12000, 9500],
+        "backgroundColor": "#5bc0de",
+        "stack": "stack1"
+      }},
+      {{
+        "label": "Max Capacity (MT)",
+        "data": [50000, 50000, 50000],
+        "borderColor": "#d9534f",
+      }}
+    ]
+  }}
+}}
+
+Example Output for generate bar and line chart in the same chart:
+{{
+  "explanation": "your explaination of final answer and how you retrive the data"
   "type": "bar",
   "data": {{
     "labels": ["26-May", "2-Jun", "9-Jun"],
