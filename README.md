@@ -9,6 +9,11 @@ pip install -r requirements.txt
 python server.py
 ```
 
+## n8n-workflow
+We upload n8n-workflow inside **n8n_workflow/** 
+![image](https://github.com/user-attachments/assets/6e125973-e66e-44b9-93fc-c6c58ee7d5ed)
+
+
 ## Running Frontend
 ```bash
 cd frontend/
